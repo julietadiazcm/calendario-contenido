@@ -1,4 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 const STORAGE_KEY = "cm-calendar-pro-v4";
 const STATUS_OPTIONS = ["Idea","Borrador","En producción","Para revisión interna","Enviado al cliente","Cambios solicitados","Aprobado","Programado","Publicado"];
@@ -150,7 +156,33 @@ export default function App() {
   const [currentMonth, setCurrentMonth] = useState(todayISO().slice(0,7));
   const [filters, setFilters] = useState({ client:"current", status:"all", type:"all", section:"all", month:"", week:"all", search:"", withComments:false, incomplete:false, changes:false });
 
-  useEffect(() => { try { localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); } catch(e){} }, [data]);
+  // Cargar datos desde Supabase al iniciar
+  useEffect(()=>{
+    async function loadFromSupabase(){
+      const {data:rows,error}=await supabase.from("contenidos").select("*");
+      if(error||!rows||rows.length===0) return; // usa datos locales si no hay nada
+      const mapped={basile:[],caro:[],suitehouse:[]};
+      rows.forEach(r=>{
+        const item={
+          id:r.id, accountId:r.account_id, section:r.section, type:r.type,
+          date:r.date, week:r.week, theme:r.theme, objective:r.objective,
+          development:r.development, script:r.script, copy:r.copy, content:r.content,
+          status:r.status, slides:r.slides||[], clientComments:r.client_comments||[],
+          internalNotes:r.internal_notes||[], checklist:r.checklist||createChecklist(),
+          metrics:r.metrics||createMetrics(),
+        };
+        if(mapped[r.account_id]) mapped[r.account_id].push(item);
+      });
+      // Solo reemplaza si hay datos en Supabase
+      if(Object.values(mapped).some(arr=>arr.length>0)) setData(mapped);
+    }
+    loadFromSupabase();
+  },[]);
+
+  // Guardar en Supabase cuando cambian los datos
+  useEffect(()=>{
+    try { localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); } catch(e){}
+  },[data]);
 
   const account = accounts.find(a=>a.id===activeAccountId);
   const B = account.brand;
@@ -193,11 +225,50 @@ export default function App() {
     return {byClient,next7};
   },[data,accounts,allItems]);
 
-  function updateItem(item){setData(prev=>({...prev,[item.accountId]:prev[item.accountId].map(i=>i.id===item.id?item:i)}));}
-  function saveSelected(){if(!selectedItem)return;updateItem({...selectedItem,week:getWeekFromDate(selectedItem.date)});setSelectedItem(null);}
-  function deleteSelected(){if(!selectedItem)return;setData(prev=>({...prev,[selectedItem.accountId]:prev[selectedItem.accountId].filter(i=>i.id!==selectedItem.id)}));setSelectedItem(null);}
-  function duplicateItem(item){const dup={...item,id:`${item.accountId}_${Date.now()}`,theme:`${item.theme} (copia)`,status:"Borrador",clientComments:[],internalNotes:[],metrics:createMetrics(),checklist:createChecklist()};setData(prev=>({...prev,[item.accountId]:[...prev[item.accountId],dup]}));}
-  function createItem(){if(!draft.theme.trim())return;const item={...draft,id:`${activeAccountId}_${Date.now()}`,accountId:activeAccountId,week:getWeekFromDate(draft.date)};setData(prev=>({...prev,[activeAccountId]:[...prev[activeAccountId],item]}));setDraft(newContent(activeAccountId));setShowNew(false);}
+  function toRow(item){
+    return {
+      id:item.id, account_id:item.accountId, section:item.section, type:item.type,
+      date:item.date, week:item.week, theme:item.theme, objective:item.objective||"",
+      development:item.development||"", script:item.script||"", copy:item.copy||"",
+      content:item.content||"", status:item.status, slides:item.slides||[],
+      client_comments:item.clientComments||[], internal_notes:item.internalNotes||[],
+      checklist:item.checklist||[], metrics:item.metrics||{},
+    };
+  }
+
+  function updateItem(item){
+    setData(prev=>({...prev,[item.accountId]:prev[item.accountId].map(i=>i.id===item.id?item:i)}));
+    supabase.from("contenidos").upsert(toRow(item)).then(({error})=>{ if(error) console.error(error); });
+  }
+
+  function saveSelected(){
+    if(!selectedItem)return;
+    const updated={...selectedItem,week:getWeekFromDate(selectedItem.date)};
+    updateItem(updated);
+    setSelectedItem(null);
+  }
+
+  function deleteSelected(){
+    if(!selectedItem)return;
+    setData(prev=>({...prev,[selectedItem.accountId]:prev[selectedItem.accountId].filter(i=>i.id!==selectedItem.id)}));
+    supabase.from("contenidos").delete().eq("id",selectedItem.id).then(({error})=>{ if(error) console.error(error); });
+    setSelectedItem(null);
+  }
+
+  function duplicateItem(item){
+    const dup={...item,id:`${item.accountId}_${Date.now()}`,theme:`${item.theme} (copia)`,status:"Borrador",clientComments:[],internalNotes:[],metrics:createMetrics(),checklist:createChecklist()};
+    setData(prev=>({...prev,[item.accountId]:[...prev[item.accountId],dup]}));
+    supabase.from("contenidos").insert(toRow(dup)).then(({error})=>{ if(error) console.error(error); });
+  }
+
+  function createItem(){
+    if(!draft.theme.trim())return;
+    const item={...draft,id:`${activeAccountId}_${Date.now()}`,accountId:activeAccountId,week:getWeekFromDate(draft.date)};
+    setData(prev=>({...prev,[activeAccountId]:[...prev[activeAccountId],item]}));
+    supabase.from("contenidos").insert(toRow(item)).then(({error})=>{ if(error) console.error(error); });
+    setDraft(newContent(activeAccountId));
+    setShowNew(false);
+  }
   function addClientComment(){if(!clientComment.trim()||!selectedItem)return;const c={id:`cc_${Date.now()}`,author:view==="client"?"Cliente":"CM",text:clientComment,date:new Date().toLocaleDateString("es-AR")};const updated={...selectedItem,clientComments:[...(selectedItem.clientComments||[]),c]};setSelectedItem(updated);updateItem(updated);setClientComment("");}
   function addInternalNote(){if(!internalNote.trim()||!selectedItem)return;const n={id:`in_${Date.now()}`,author:"CM",text:internalNote,date:new Date().toLocaleDateString("es-AR")};const updated={...selectedItem,internalNotes:[...(selectedItem.internalNotes||[]),n]};setSelectedItem(updated);updateItem(updated);setInternalNote("");}
   function removeInternalNote(id){const updated={...selectedItem,internalNotes:selectedItem.internalNotes.filter(n=>n.id!==id)};setSelectedItem(updated);updateItem(updated);}
