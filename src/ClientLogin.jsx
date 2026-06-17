@@ -38,6 +38,18 @@ const CLIENTS = {
     text: "#1A1A1A",
     white: "#FFFFFF",
   },
+  mariano: {
+    name: "Mariano Magicaldreamakers",
+    emoji: "🏰",
+    password: "mariano",
+    primary: "#6FA8DC",
+    primarySoft: "#bcd9f0",
+    btnBg: "#6FA8DC",
+    btnText: "#FFFFFF",
+    bg: "#EFF5FB",
+    text: "#1c2330",
+    white: "#FFFFFF",
+  },
 };
 
 export default function ClientLogin() {
