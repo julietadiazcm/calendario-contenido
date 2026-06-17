@@ -149,7 +149,7 @@ export default function App() {
           .cm-header-hint{display:none}
           .cm-sidebar{
             position:fixed !important;
-            top:58px !important;
+            top:calc(58px + env(safe-area-inset-top)) !important;
             left:0 !important;
             bottom:0 !important;
             z-index:250 !important;
@@ -165,7 +165,7 @@ export default function App() {
           .cm-sidebar-backdrop{
             display:block !important;
             position:fixed !important;
-            inset:58px 0 0 0 !important;
+            inset:calc(58px + env(safe-area-inset-top)) 0 0 0 !important;
             background:rgba(0,0,0,0.4) !important;
             z-index:240 !important;
           }
@@ -175,7 +175,7 @@ export default function App() {
 
       <Header B={B} view={view} onViewChange={handleViewChange} onMenuToggle={() => setSidebarOpen(o => !o)} sidebarOpen={sidebarOpen} />
 
-      <div style={{ display: "flex", minHeight: "calc(100vh - 58px)" }}>
+      <div style={{ display: "flex", minHeight: "calc(100vh - 58px - env(safe-area-inset-top))" }}>
         <Sidebar
           accounts={accounts}
           activeAccountId={activeAccountId}

@@ -2,8 +2,10 @@ export function Header({ B, view, onViewChange, onMenuToggle, sidebarOpen }) {
   return (
     <header style={{
       background: B.sidebar, padding: "0 16px", display: "flex",
-      justifyContent: "space-between", alignItems: "center",
-      height: 58, position: "sticky", top: 0, zIndex: 300,
+      justifyContent: "space-between", alignItems: "flex-end",
+      height: "calc(58px + env(safe-area-inset-top))",
+      paddingTop: "env(safe-area-inset-top)",
+      position: "sticky", top: 0, zIndex: 300,
       boxShadow: "0 2px 14px rgba(0,0,0,0.15)",
     }}>
       {/* Hamburger — only visible on mobile via CSS class */}
