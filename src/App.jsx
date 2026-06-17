@@ -23,6 +23,7 @@ export default function App() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showNew, setShowNew] = useState(false);
   const [newInitialDate, setNewInitialDate] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filters, setFilters] = useState({
     client: "current", status: "all", type: "all", section: "all",
     month: "", week: "all", search: "", withComments: false, incomplete: false, changes: false,
@@ -139,9 +140,40 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100vh", background: B.bg, color: B.text, fontFamily: B.fontBody }}>
-      <style>{`*{box-sizing:border-box;margin:0;padding:0}::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:${B.primary}60;border-radius:3px}`}</style>
+      <style>{`
+        *{box-sizing:border-box;margin:0;padding:0}
+        ::-webkit-scrollbar{width:5px}
+        ::-webkit-scrollbar-thumb{background:${B.primary}60;border-radius:3px}
+        @media(max-width:640px){
+          .cm-hamburger{display:flex !important;align-items:center}
+          .cm-header-hint{display:none}
+          .cm-sidebar{
+            position:fixed !important;
+            top:58px !important;
+            left:0 !important;
+            bottom:0 !important;
+            z-index:250 !important;
+            transform:translateX(-100%) !important;
+            transition:transform 0.25s ease !important;
+            overflow-y:auto !important;
+            box-shadow:none !important;
+          }
+          .cm-sidebar.cm-sidebar-open{
+            transform:translateX(0) !important;
+            box-shadow:4px 0 24px rgba(0,0,0,0.25) !important;
+          }
+          .cm-sidebar-backdrop{
+            display:block !important;
+            position:fixed !important;
+            inset:58px 0 0 0 !important;
+            background:rgba(0,0,0,0.4) !important;
+            z-index:240 !important;
+          }
+          .cm-main{padding:12px !important}
+        }
+      `}</style>
 
-      <Header B={B} view={view} onViewChange={handleViewChange} />
+      <Header B={B} view={view} onViewChange={handleViewChange} onMenuToggle={() => setSidebarOpen(o => !o)} sidebarOpen={sidebarOpen} />
 
       <div style={{ display: "flex", minHeight: "calc(100vh - 58px)" }}>
         <Sidebar
@@ -153,9 +185,11 @@ export default function App() {
           view={view}
           B={B}
           notifCount={notifCount}
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
         />
 
-        <main style={{ flex: 1, padding: 24, overflowY: "auto" }}>
+        <main className="cm-main" style={{ flex: 1, padding: 24, overflowY: "auto" }}>
           {tab === "calendar" && (
             <CalendarView
               visibleItems={visibleItems}
