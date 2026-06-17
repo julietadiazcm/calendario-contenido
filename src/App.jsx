@@ -792,6 +792,37 @@ Respondé de forma clara, concreta y lista para usar. Sin rodeos.`;
             )}
 
             {/* Fields */}
+            {/* Vista previa estructurada: Hook / Desarrollo / Visual / CTA */}
+            {(() => {
+              const isStory2 = selectedItem.section === "story";
+              const fullText = isStory2 ? (selectedItem.content||"") : ((selectedItem.script||"") + "\n" + (selectedItem.copy||""));
+              function extractBlock(text, label) {
+                const regex = new RegExp(`${label}:\\s*(.+?)(?=\\n(?:HOOK|CTA|VISUAL)[:]|$)`, "is");
+                const m = text.match(regex);
+                return m ? m[1].trim() : "";
+              }
+              const hook = extractBlock(fullText, "HOOK");
+              const visual = extractBlock(fullText, "VISUAL");
+              const cta = extractBlock(fullText, "CTA");
+              if (!hook && !visual && !cta) return null;
+              const Block = ({icon,label,text,bg,border,color}) => !text ? null : (
+                <div style={{ marginBottom:10, background:bg, border:`1px solid ${border}`, borderRadius:10, padding:"10px 13px" }}>
+                  <div style={{ fontSize:10, fontWeight:800, textTransform:"uppercase", letterSpacing:1.2, color, marginBottom:5, display:"flex", alignItems:"center", gap:6 }}>
+                    <span>{icon}</span>{label}
+                  </div>
+                  <div style={{ fontSize:13, whiteSpace:"pre-wrap", lineHeight:1.6 }}>{text}</div>
+                </div>
+              );
+              return (
+                <div style={{ marginBottom:16, padding:14, background:"#fafafa", borderRadius:12, border:"1px dashed #ddd" }}>
+                  <div style={{ fontSize:10, fontWeight:800, color:"#999", textTransform:"uppercase", letterSpacing:1.5, marginBottom:10 }}>👁 Vista previa estructurada (cómo lo ve el cliente)</div>
+                  <Block icon="🎯" label="Hook" text={hook} bg={`${B.accent}15`} border={`${B.accent}35`} color={B.accent}/>
+                  <Block icon="🎬" label="Visual" text={visual} bg={`${B.primary}10`} border={`${B.primary}25`} color={B.primary}/>
+                  <Block icon="📣" label="CTA" text={cta} bg={`${B.primary}18`} border={`${B.primary}40`} color={B.primary}/>
+                </div>
+              );
+            })()}
+
             <MF label="Tema" value={selectedItem.theme} editable={editable} onChange={v=>setSelectedItem({...selectedItem,theme:v})} S={S}/>
             {editable&&<MF label="Objetivo interno" value={selectedItem.objective} editable onChange={v=>setSelectedItem({...selectedItem,objective:v})} S={S}/>}
             {editable&&<MF label="Desarrollo interno" value={selectedItem.development} textarea editable onChange={v=>setSelectedItem({...selectedItem,development:v})} S={S}/>}

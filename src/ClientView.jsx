@@ -367,19 +367,70 @@ export default function ClientView() {
                 </div>
               )}
 
-              {(selected.copy||selected.content)&&(
-                <div style={{ marginBottom:16 }}>
-                  <div style={{ fontSize:10, fontWeight:800, textTransform:"uppercase", letterSpacing:1.2, color:"#aaa", marginBottom:6 }}>{selected.section==="story"?"Contenido":"Copy del post"}</div>
-                  <div style={{ fontSize:13, whiteSpace:"pre-wrap", lineHeight:1.7, background:`${B.primary}12`, padding:"12px 14px", borderRadius:10, border:`1px solid ${B.primary}25` }}>{selected.copy||selected.content}</div>
-                </div>
-              )}
+              {/* Parsed content blocks: Hook, Desarrollo, Visual, CTA */}
+              {(() => {
+                const isStory = selected.section === "story";
+                const rawScript = selected.script || "";
+                const rawCopy = selected.copy || "";
+                const rawContent = selected.content || "";
+                const fullText = isStory ? rawContent : (rawScript + "\n" + rawCopy);
 
-              {selected.script&&selected.section!=="story"&&(
-                <div style={{ marginBottom:16 }}>
-                  <div style={{ fontSize:10, fontWeight:800, textTransform:"uppercase", letterSpacing:1.2, color:"#aaa", marginBottom:6 }}>Guion</div>
-                  <div style={{ fontSize:13, whiteSpace:"pre-wrap", lineHeight:1.65 }}>{selected.script}</div>
-                </div>
-              )}
+                function extractBlock(text, label) {
+                  const regex = new RegExp(`${label}:\\s*(.+?)(?=\\n(?:HOOK|CTA|VISUAL)[:]|$)`, "is");
+                  const m = text.match(regex);
+                  return m ? m[1].trim() : "";
+                }
+
+                const hook = extractBlock(fullText, "HOOK");
+                const visual = extractBlock(fullText, "VISUAL");
+                const cta = extractBlock(fullText, "CTA");
+                // "Development" = everything else minus the labeled blocks
+                let development = fullText
+                  .replace(/HOOK:.+?(?=\n(?:HOOK|CTA|VISUAL)[:]|$)/is, "")
+                  .replace(/VISUAL:.+?(?=\n(?:HOOK|CTA|VISUAL)[:]|$)/is, "")
+                  .replace(/CTA:.+?(?=\n(?:HOOK|CTA|VISUAL)[:]|$)/is, "")
+                  .trim();
+
+                const hasStructure = hook || visual || cta;
+
+                if (!hasStructure) {
+                  // fallback: show raw fields as before
+                  return (
+                    <>
+                      {(rawCopy||rawContent)&&(
+                        <div style={{ marginBottom:16 }}>
+                          <div style={{ fontSize:10, fontWeight:800, textTransform:"uppercase", letterSpacing:1.2, color:"#aaa", marginBottom:6 }}>{isStory?"Contenido":"Copy del post"}</div>
+                          <div style={{ fontSize:13, whiteSpace:"pre-wrap", lineHeight:1.7, background:`${B.primary}12`, padding:"12px 14px", borderRadius:10, border:`1px solid ${B.primary}25` }}>{rawCopy||rawContent}</div>
+                        </div>
+                      )}
+                      {rawScript&&!isStory&&(
+                        <div style={{ marginBottom:16 }}>
+                          <div style={{ fontSize:10, fontWeight:800, textTransform:"uppercase", letterSpacing:1.2, color:"#aaa", marginBottom:6 }}>Guion</div>
+                          <div style={{ fontSize:13, whiteSpace:"pre-wrap", lineHeight:1.65 }}>{rawScript}</div>
+                        </div>
+                      )}
+                    </>
+                  );
+                }
+
+                const Block = ({icon, label, text, bg, border, color}) => !text ? null : (
+                  <div style={{ marginBottom:14, background:bg, border:`1px solid ${border}`, borderRadius:10, padding:"12px 14px" }}>
+                    <div style={{ fontSize:10, fontWeight:800, textTransform:"uppercase", letterSpacing:1.2, color, marginBottom:6, display:"flex", alignItems:"center", gap:6 }}>
+                      <span>{icon}</span>{label}
+                    </div>
+                    <div style={{ fontSize:13.5, whiteSpace:"pre-wrap", lineHeight:1.7, color:B.text }}>{text}</div>
+                  </div>
+                );
+
+                return (
+                  <>
+                    <Block icon="🎯" label="Hook" text={hook} bg={`${B.accent}15`} border={`${B.accent}35`} color={B.accent}/>
+                    <Block icon="📝" label="Desarrollo" text={development} bg="#f8f9fa" border="#e5e7eb" color="#666"/>
+                    <Block icon="🎬" label="Visual" text={visual} bg={`${B.primary}10`} border={`${B.primary}25`} color={B.primary}/>
+                    <Block icon="📣" label="Llamado a la acción" text={cta} bg={`${B.primary}18`} border={`${B.primary}40`} color={B.primary}/>
+                  </>
+                );
+              })()}
 
               {selected.slides?.length>0&&(
                 <div style={{ marginBottom:16 }}>
