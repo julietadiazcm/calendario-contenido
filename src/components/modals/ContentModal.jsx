@@ -105,7 +105,7 @@ export function ContentModal({ item, account, view, S, onClose, onSave, onDelete
                 <button style={bStyle("#ef4444")} onClick={() => { onDelete(localItem); onClose(); }}>Eliminar</button>
               </>
             )}
-            {isClient && (localItem.status === "Enviado al cliente" || localItem.status === "Cambios solicitados") && (
+            {isClient && localItem.status !== "Publicado" && (
               <>
                 <button style={bStyle("#22c55e")} onClick={handleApprove}>✅ Aprobar</button>
                 <button style={bStyle("#ef4444")} onClick={handleRequestChanges}>✏️ Pedir cambios</button>
@@ -130,11 +130,10 @@ export function ContentModal({ item, account, view, S, onClose, onSave, onDelete
                 </select>
               </>
             )}
-            {isClient && localItem.status === "Aprobado" && <span style={{ color: "#22c55e", fontWeight: 700 }}>✅ Aprobado</span>}
           </div>
 
-          {/* Client action banner */}
-          {isClient && (localItem.status === "Enviado al cliente" || localItem.status === "Cambios solicitados") && (
+          {/* Client action banner — visible for any status except Publicado */}
+          {isClient && localItem.status !== "Publicado" && (
             <div style={{ background: `${B.primary}12`, border: `1px solid ${B.primary}30`, borderRadius: 10, padding: "12px 16px", marginBottom: 16, display: "flex", gap: 10 }}>
               <button onClick={handleApprove} style={{ flex: 1, padding: 10, borderRadius: 8, border: "none", background: "#22c55e", color: "#fff", fontWeight: 700, cursor: "pointer" }}>✅ Aprobar contenido</button>
               <button onClick={handleRequestChanges} style={{ flex: 1, padding: 10, borderRadius: 8, border: "1.5px solid #ef4444", background: "transparent", color: "#ef4444", fontWeight: 700, cursor: "pointer" }}>✏️ Pedir cambios</button>
