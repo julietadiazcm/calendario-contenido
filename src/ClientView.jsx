@@ -28,7 +28,7 @@ export default function ClientView() {
   const [selected, setSelected] = useState(null);
   const [comment, setComment] = useState("");
   const [section, setSection] = useState("all");
-  const [viewMode, setViewMode] = useState("list"); // list | month
+  const [viewMode, setViewMode] = useState("month"); // month | list
   const [currentMonth, setCurrentMonth] = useState(todayISO().slice(0,7));
   const [selectedDate, setSelectedDate] = useState(null);
   const [showDayPanel, setShowDayPanel] = useState(false);
@@ -277,7 +277,7 @@ export default function ClientView() {
       <div style={{ maxWidth:760, margin:"0 auto", padding:"24px 16px" }}>
         {/* View mode tabs */}
         <div style={{ display:"flex", gap:8, marginBottom:20 }}>
-          {[["list","📋 Lista"],["month","📅 Mes"]].map(([mode,label])=>(
+          {[["month","📅 Mes"],["list","📋 Lista"]].map(([mode,label])=>(
             <button key={mode} onClick={()=>setViewMode(mode)}
               style={{ padding:"8px 18px", borderRadius:20, border:`1.5px solid ${viewMode===mode?B.primary:"#ddd"}`, background:viewMode===mode?B.primary:"#fff", color:viewMode===mode?B.btnText:"#777", fontWeight:viewMode===mode?700:400, fontSize:13, cursor:"pointer", transition:"all 0.2s" }}>
               {label}
@@ -360,10 +360,10 @@ export default function ClientView() {
                 {selected.status==="Aprobado"&&<span style={{ color:"#22c55e", fontWeight:700, fontSize:13 }}>Aprobado</span>}
               </div>
 
-              {(selected.status==="Enviado al cliente"||selected.status==="Cambios solicitados")&&(
+              {selected.status !== "Publicado" && (
                 <div style={{ display:"flex", gap:10, marginBottom:20, padding:"14px 16px", background:`${B.primary}12`, borderRadius:10, border:`1px solid ${B.primary}30` }}>
-                  <button onClick={approveItem} style={{ flex:1, padding:12, borderRadius:8, border:"none", background:"#22c55e", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:14 }}>Aprobar</button>
-                  <button onClick={requestChanges} style={{ flex:1, padding:12, borderRadius:8, border:"1.5px solid #ef4444", background:"transparent", color:"#ef4444", fontWeight:700, cursor:"pointer", fontSize:14 }}>Pedir cambios</button>
+                  <button onClick={approveItem} style={{ flex:1, padding:12, borderRadius:8, border:"none", background:"#22c55e", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:14 }}>✅ Aprobar</button>
+                  <button onClick={requestChanges} style={{ flex:1, padding:12, borderRadius:8, border:"1.5px solid #ef4444", background:"transparent", color:"#ef4444", fontWeight:700, cursor:"pointer", fontSize:14 }}>✏️ Pedir cambios</button>
                 </div>
               )}
 
