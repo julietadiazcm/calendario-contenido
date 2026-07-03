@@ -164,12 +164,22 @@ export default function ClientView() {
       .from("contenidos").select("*")
       .eq("account_id", clientId).order("date");
     if (!error && data) {
-      setItems(data.map(r => ({
+      const mapped = data.map(r => ({
         id: r.id, accountId: r.account_id, section: r.section, type: r.type,
         date: r.date, week: r.week, theme: r.theme, script: r.script, copy: r.copy,
         content: r.content, status: r.status, slides: r.slides || [],
         clientComments: r.client_comments || [],
-      })));
+      }));
+      setItems(mapped);
+      // If no items this month, jump to the earliest month that has content
+      const today = todayISO().slice(0, 7);
+      const hasThisMonth = mapped.some(i => i.date?.startsWith(today));
+      if (!hasThisMonth && mapped.length > 0) {
+        const months = [...new Set(mapped.map(i => i.date?.slice(0, 7)).filter(Boolean))].sort();
+        // prefer upcoming months first, fallback to most recent past
+        const future = months.filter(m => m >= today);
+        setCurrentMonth(future.length > 0 ? future[0] : months[months.length - 1]);
+      }
     }
     setLoading(false);
   }
