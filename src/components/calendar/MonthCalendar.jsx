@@ -6,7 +6,17 @@ const DOW = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
 
 export function MonthCalendar({ visibleItems, account, S, onDayClick, onNewForDate }) {
   const B = account.brand;
-  const [currentMonth, setCurrentMonth] = useState(todayISO().slice(0, 7));
+
+  function pickStartMonth() {
+    const today = todayISO().slice(0, 7);
+    const hasToday = visibleItems.some(i => i.date?.startsWith(today));
+    if (hasToday || visibleItems.length === 0) return today;
+    const months = [...new Set(visibleItems.map(i => i.date?.slice(0, 7)).filter(Boolean))].sort();
+    const future = months.filter(m => m >= today);
+    return future.length > 0 ? future[0] : months[months.length - 1];
+  }
+
+  const [currentMonth, setCurrentMonth] = useState(pickStartMonth);
 
   const [year, month] = currentMonth.split("-").map(Number);
   const firstDay = new Date(year, month - 1, 1);
