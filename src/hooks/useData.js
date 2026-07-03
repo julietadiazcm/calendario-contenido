@@ -32,18 +32,18 @@ export function useData() {
         return;
       }
 
+      const mapped = { basile: [], caro: [], suitehouse: [], mariano: [] };
+
       if (!rows || rows.length === 0) {
+        // DB completely empty — seed everything
         const items = Object.values(initialData).flat();
-        const { error: seedErr } = await supabase
-          .from("contenidos")
-          .upsert(items.map(toRow));
+        const { error: seedErr } = await supabase.from("contenidos").upsert(items.map(toRow));
         if (seedErr) showToast("Error al sincronizar datos iniciales", "error");
         else showToast("Datos sincronizados con Supabase ✓");
         setLoading(false);
         return;
       }
 
-      const mapped = { basile: [], caro: [], suitehouse: [], mariano: [] };
       rows.forEach(r => {
         const item = {
           id: r.id,
@@ -69,6 +69,16 @@ export function useData() {
           mapped[r.account_id].push(item);
         }
       });
+
+      // Seed any account that has initialData but 0 rows in Supabase
+      const toSeed = Object.entries(initialData)
+        .filter(([accountId, items]) => items.length > 0 && mapped[accountId]?.length === 0);
+      if (toSeed.length > 0) {
+        const seedItems = toSeed.flatMap(([, items]) => items);
+        await supabase.from("contenidos").upsert(seedItems.map(toRow));
+        toSeed.forEach(([accountId, items]) => { mapped[accountId] = items; });
+        showToast("Nuevas cuentas sincronizadas ✓");
+      }
 
       if (Object.values(mapped).some(arr => arr.length > 0)) {
         setData(mapped);
