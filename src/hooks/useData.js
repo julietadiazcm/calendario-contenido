@@ -70,6 +70,23 @@ export function useData() {
         }
       });
 
+      // Sync any items that exist in localStorage but are missing from Supabase
+      let localData = null;
+      try { localData = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch {}
+      if (localData) {
+        const supabaseIds = new Set(rows.map(r => r.id));
+        const missing = Object.values(localData).flat().filter(item => item.id && !supabaseIds.has(item.id));
+        if (missing.length > 0) {
+          await supabase.from("contenidos").upsert(missing.map(toRow));
+          missing.forEach(item => {
+            if (mapped[item.accountId] !== undefined && !mapped[item.accountId].find(i => i.id === item.id)) {
+              mapped[item.accountId].push(item);
+            }
+          });
+          showToast(`${missing.length} contenido${missing.length > 1 ? "s" : ""} sincronizado${missing.length > 1 ? "s" : ""} ✓`);
+        }
+      }
+
       // Seed any account that has initialData but 0 rows in Supabase
       const toSeed = Object.entries(initialData)
         .filter(([accountId, items]) => items.length > 0 && mapped[accountId]?.length === 0);
@@ -77,7 +94,6 @@ export function useData() {
         const seedItems = toSeed.flatMap(([, items]) => items);
         await supabase.from("contenidos").upsert(seedItems.map(toRow));
         toSeed.forEach(([accountId, items]) => { mapped[accountId] = items; });
-        showToast("Nuevas cuentas sincronizadas ✓");
       }
 
       if (Object.values(mapped).some(arr => arr.length > 0)) {
