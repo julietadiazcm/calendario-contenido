@@ -113,4 +113,5 @@ export const initialData = {
   caro: caroData,
   suitehouse: suiteData,
   mariano: marianoData,
+  valeria: [],
 };

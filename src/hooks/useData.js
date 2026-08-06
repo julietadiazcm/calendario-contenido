@@ -32,7 +32,7 @@ export function useData() {
         return;
       }
 
-      const mapped = { basile: [], caro: [], suitehouse: [], mariano: [] };
+      const mapped = { basile: [], caro: [], suitehouse: [], mariano: [], valeria: [] };
 
       if (!rows || rows.length === 0) {
         // DB completely empty — seed everything
