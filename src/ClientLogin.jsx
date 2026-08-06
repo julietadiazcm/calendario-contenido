@@ -38,6 +38,18 @@ const CLIENTS = {
     text: "#1A1A1A",
     white: "#FFFFFF",
   },
+  valeria: {
+    name: "Nutrivaliosa · Valeria",
+    emoji: "🌿",
+    password: "valeria",
+    primary: "#A87DC2",
+    primarySoft: "#D4B8E0",
+    btnBg: "#A87DC2",
+    btnText: "#FFFFFF",
+    bg: "#F5EEFF",
+    text: "#2D1654",
+    white: "#FFFAFF",
+  },
   mariano: {
     name: "Mariano Magicaldreamakers",
     emoji: "🏰",

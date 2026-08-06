@@ -11,6 +11,7 @@ const CLIENTS = {
   caro:       { name:"Caro · Nutricionista",         emoji:"🥗", primary:"#99B8B2", primarySoft:"#c8dcd9", accent:"#F791A9", text:"#171820", white:"#FFFDF8", bg:"#E9E7EA", cardBg:"#FFFDF8", btnBg:"#99B8B2",  btnText:"#FFFDF8" },
   basile:     { name:"Distribuidora Basile",          emoji:"📦", primary:"#F6D522", primarySoft:"#FBEA8C", accent:"#EF1C16", text:"#111111", white:"#FFFEF5", bg:"#FFF8D0", cardBg:"#FFFFF8", btnBg:"#EF1C16",  btnText:"#FFFFFF" },
   suitehouse: { name:"Suite House Cariló",            emoji:"🌲", primary:"#AAB8A3", primarySoft:"#d0daca", accent:"#928359", text:"#1A1A1A", white:"#FFFFFF", bg:"#f5f3ef", cardBg:"#FFFFFF", btnBg:"#928359",  btnText:"#FFFFFF" },
+  valeria:    { name:"Nutrivaliosa · Valeria",          emoji:"🌿", primary:"#A87DC2", primarySoft:"#D4B8E0", accent:"#F4A0C0", text:"#2D1654", white:"#FFFAFF", bg:"#F5EEFF", cardBg:"#FFFAFF", btnBg:"#A87DC2",  btnText:"#FFFFFF" },
   mariano:    { name:"Mariano Magicaldreamakers",     emoji:"🏰", primary:"#6FA8DC", primarySoft:"#bcd9f0", accent:"#E8B84B", text:"#1c2330", white:"#FFFFFF", bg:"#EFF5FB", cardBg:"#FFFFFF", btnBg:"#6FA8DC",  btnText:"#FFFFFF" },
 };
 
