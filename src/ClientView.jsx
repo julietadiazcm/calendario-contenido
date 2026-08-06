@@ -167,7 +167,8 @@ export default function ClientView() {
     if (!error && data) {
       const mapped = data.map(r => ({
         id: r.id, accountId: r.account_id, section: r.section, type: r.type,
-        date: r.date, week: r.week, theme: r.theme, script: r.script, copy: r.copy,
+        date: r.date, week: r.week, theme: r.theme, objective: r.objective,
+        development: r.development, script: r.script, copy: r.copy,
         content: r.content, status: r.status, slides: r.slides || [],
         clientComments: r.client_comments || [],
       }));
@@ -398,27 +399,8 @@ export default function ClientView() {
   // ── CONTENT BLOCKS ────────────────────────────────────────────────────────────
   function renderContent(item) {
     const isStory = item.section === "story";
-    const rawScript = item.script || "";
-    const rawCopy = item.copy || "";
-    const rawContent = item.content || "";
-    const fullText = isStory ? rawContent : (rawScript + "\n" + rawCopy);
 
-    function extractBlock(text, label) {
-      const m = text.match(new RegExp(`${label}:\\s*(.+?)(?=\\n(?:HOOK|CTA|VISUAL)[:]|$)`, "is"));
-      return m ? m[1].trim() : "";
-    }
-
-    const hook = extractBlock(fullText, "HOOK");
-    const visual = extractBlock(fullText, "VISUAL");
-    const cta = extractBlock(fullText, "CTA");
-    const development = fullText
-      .replace(/HOOK:.+?(?=\n(?:HOOK|CTA|VISUAL)[:]|$)/is, "")
-      .replace(/VISUAL:.+?(?=\n(?:HOOK|CTA|VISUAL)[:]|$)/is, "")
-      .replace(/CTA:.+?(?=\n(?:HOOK|CTA|VISUAL)[:]|$)/is, "")
-      .trim();
-    const hasStructure = hook || visual || cta;
-
-    const Block = ({ icon, label, text, bg, border, color }) => !text ? null : (
+    const Block = ({ icon, label, text, bg, border, color }) => !text?.trim() ? null : (
       <div style={{ marginBottom:12, background:bg, border:`1px solid ${border}`, borderRadius:12, padding:"12px 14px" }}>
         <div style={{ fontSize:10, fontWeight:800, textTransform:"uppercase", letterSpacing:1.2, color, marginBottom:6, display:"flex", alignItems:"center", gap:6 }}>
           {icon} {label}
@@ -427,35 +409,13 @@ export default function ClientView() {
       </div>
     );
 
-    if (!hasStructure) {
-      return (
-        <>
-          {(rawCopy || rawContent) && (
-            <div style={{ marginBottom:14 }}>
-              <div style={{ fontSize:10, fontWeight:800, textTransform:"uppercase", letterSpacing:1.2, color:"#aaa", marginBottom:6 }}>
-                {isStory ? "Contenido" : "Copy del post"}
-              </div>
-              <div style={{ fontSize:14, whiteSpace:"pre-wrap", lineHeight:1.75, background:`${B.primary}12`, padding:"14px", borderRadius:12, border:`1px solid ${B.primary}25` }}>
-                {rawCopy || rawContent}
-              </div>
-            </div>
-          )}
-          {rawScript && !isStory && (
-            <div style={{ marginBottom:14 }}>
-              <div style={{ fontSize:10, fontWeight:800, textTransform:"uppercase", letterSpacing:1.2, color:"#aaa", marginBottom:6 }}>Guion</div>
-              <div style={{ fontSize:13, whiteSpace:"pre-wrap", lineHeight:1.65, color:"#555" }}>{rawScript}</div>
-            </div>
-          )}
-        </>
-      );
-    }
-
     return (
       <>
-        <Block icon="🎯" label="Hook" text={hook} bg={`${B.accent}15`} border={`${B.accent}35`} color={B.accent} />
-        <Block icon="📝" label="Desarrollo" text={development} bg="#f8f9fa" border="#e5e7eb" color="#666" />
-        <Block icon="🎬" label="Visual" text={visual} bg={`${B.primary}10`} border={`${B.primary}25`} color={B.primary} />
-        <Block icon="📣" label="Llamado a la acción" text={cta} bg={`${B.primary}18`} border={`${B.primary}40`} color={B.primary} />
+        <Block icon="🎯" label="Objetivo" text={item.objective} bg={`${B.accent}12`} border={`${B.accent}30`} color={B.accent} />
+        <Block icon="🎬" label={isStory ? "Guion" : "Hook / Título"} text={item.script} bg={`${B.primary}10`} border={`${B.primary}25`} color={B.primary} />
+        <Block icon="📝" label={isStory ? "Descripción" : "Desarrollo"} text={item.development} bg="#f8f9fa" border="#e5e7eb" color="#666" />
+        <Block icon="📸" label="Recursos / Tomas" text={item.content} bg={`${B.primarySoft}30`} border={`${B.primarySoft}60`} color={B.text} />
+        <Block icon="📣" label="Copy / CTA" text={item.copy} bg={`${B.primary}15`} border={`${B.primary}35`} color={B.primary} />
       </>
     );
   }
